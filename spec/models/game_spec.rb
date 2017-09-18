@@ -71,5 +71,18 @@ RSpec.describe Game, type: :model do
       expect(game_w_questions.status).to eq(:in_progress)
       expect(game_w_questions.finished?).to be_falsey
     end
+
+    it 'finishes game to take_money!' do
+      question = game_w_questions.current_game_question
+      game_w_questions.answer_current_question!(question.correct_answer_key)
+
+      game_w_questions.take_money!
+
+      prize = game_w_questions.prize
+      expect(prize).to be > 0
+      expect(game_w_questions.status).to eq :money
+      expect(game_w_questions).to be_finished
+      expect(user.balance).to eq prize
+    end
   end
 end

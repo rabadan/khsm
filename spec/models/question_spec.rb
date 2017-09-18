@@ -18,5 +18,9 @@ RSpec.describe Question, type: :model do
 
     it { should_not allow_value(500).for(:level) }
     it { should allow_value(14).for(:level) }
+
+    subject { FactoryGirl.build(:question) }
+
+    it { should validate_uniqueness_of :text }
   end
 end
