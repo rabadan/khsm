@@ -38,4 +38,22 @@ RSpec.describe GameQuestion, type: :model do
       expect(game_question.correct_answer_key).to eq('b')
     end
   end
+
+  # Группа тестов на помощь игроку
+  context 'user helpers' do
+    # проверяем работоспосбность "помощи зала"
+    it 'correct audience_help' do
+      # сначала убедимся, в подсказках пока нет нужного ключа
+      expect(game_question.help_hash).not_to include(:audience_help)
+      # вызовем подсказку
+      game_question.add_audience_help
+
+      # проверим создание подсказки
+      expect(game_question.help_hash).to include(:audience_help)
+
+      # мы не можем знать распределение, но может проверить хотя бы наличие нужных ключей
+      ah = game_question.help_hash[:audience_help]
+      expect(ah.keys).to contain_exactly('a', 'b', 'c', 'd')
+    end
+  end
 end

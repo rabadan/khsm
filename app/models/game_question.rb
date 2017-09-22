@@ -1,5 +1,5 @@
 #  (c) goodprogrammer.ru
-#
+require 'game_help_generator'
 # Игровой вопрос — модель, которая связывает игру и вопрос. При создании новой
 # игры формируется массив из 15 игровых вопросов для конкретной игры.
 class GameQuestion < ActiveRecord::Base
@@ -28,6 +28,15 @@ class GameQuestion < ActiveRecord::Base
   # В полях a, b, c и d прячутся индексы ответов из объекта :game. Каждый из
   # них — целое число от 1 до 4.
   validates :a, :b, :c, :d, inclusion: {in: 1..4}
+
+  serialize :help_hash, Hash
+  # help_hash у нас имеет такой формат:
+  # {
+  #   fifty_fifty: ['a', 'b'], # При использовании подсказски остались варианты a и b
+  #   audience_help: {'a' => 42, 'c' => 37 ...}, # Распределение голосов по вариантам a, b, c, d
+  #   friend_call: 'Василий Петрович считает, что правильный ответ A'
+  # }
+  #
 
   # Основные методы для доступа к данным в шаблонах и контроллерах:
 
@@ -64,5 +73,35 @@ class GameQuestion < ActiveRecord::Base
   # Метод correct_answer возвращает текст правильного ответа
   def correct_answer
     variants[correct_answer_key]
+  end
+
+  # Генерируем в help_hash случайное распределение по вариантам и сохраняем объект
+  def add_audience_help
+    # массив ключей
+    keys_to_use = keys_to_use_in_help
+    self.help_hash[:audience_help] = GameHelpGenerator.audience_distribution(keys_to_use, correct_answer_key)
+    save
+  end
+
+  # Добавляем в help_hash подсказку друга и сохраняем объект
+  def add_friend_call
+    # массив ключей
+    keys_to_use = keys_to_use_in_help
+    self.help_hash[:friend_call] = GameHelpGenerator.friend_call(keys_to_use, correct_answer_key)
+    save
+  end
+
+  def apply_help!(help_type)
+    send("add_#{help_type}")
+  end
+
+  private
+
+  # Рассчитываем какие ключи нам доступны в подсказках
+  def keys_to_use_in_help
+    keys_to_use = variants.keys
+    # Учитываем наличие подсказки 50/50
+    keys_to_use = help_hash[:fifty_fifty] if help_hash.has_key?(:fifty_fifty)
+    keys_to_use
   end
 end
