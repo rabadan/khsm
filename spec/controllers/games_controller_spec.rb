@@ -94,6 +94,24 @@ RSpec.describe GamesController, type: :controller do
       expect(flash).to be_empty
     end
 
+    it 'incorrect answer' do
+      # получаем не правильный ответ
+      bad_answer_letters = %w(a b c d)
+      bad_answer_letters.delete(game_w_questions.current_game_question.correct_answer_key)
+
+      # отвечаем не правильно
+      put :answer, id: game_w_questions.id, letter: bad_answer_letters.sample
+
+      game = assigns(:game)
+
+      # проверяем что игра закончилась на не правильном ответе
+      expect(game).to be_finished
+      expect(game.status).to eq :fail
+      expect(game.current_level).to eq 0
+      expect(response).to redirect_to user_path(user)
+      expect(flash[:alert]).to be
+    end
+
     it 'show alien game' do
       alien_game = FactoryGirl.create(:game_with_questions)
 
