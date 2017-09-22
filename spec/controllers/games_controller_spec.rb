@@ -162,5 +162,26 @@ RSpec.describe GamesController, type: :controller do
       expect(game.current_game_question.help_hash[:audience_help].keys).to contain_exactly('a', 'b', 'c', 'd')
       expect(response).to redirect_to(game_path(game))
     end
+
+    # тест на отработку "50/50"
+    it 'uses fifty_fifty help' do
+      # сперва проверяем что в подсказках текущего вопроса пусто
+      expect(game_w_questions.current_game_question.help_hash[:fifty_fifty]).not_to be
+      expect(game_w_questions.fifty_fifty_used).to be_falsey
+
+      # фигачим запрос в контроллен с нужным типом
+      put :help, id: game_w_questions.id, help_type: :fifty_fifty
+      game = assigns(:game)
+
+      # правильный ответ
+      correct_answer_key = game_w_questions.current_game_question.correct_answer_key
+
+      expect(game.finished?).to be_falsey
+      expect(game.fifty_fifty_used).to be_truthy
+      expect(game.current_game_question.help_hash[:fifty_fifty]).to be
+      # проверяем, что присуствует правильный ответ
+      expect(game.current_game_question.help_hash[:fifty_fifty]).to include(correct_answer_key)
+      expect(response).to redirect_to(game_path(game))
+    end
   end
 end
