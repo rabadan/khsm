@@ -113,4 +113,60 @@ RSpec.describe Game, type: :model do
       expect(game_w_questions.status).to eq(:money)
     end
   end
+
+  context '.current_game_question' do
+    let(:new_level) { 13 }
+
+    it 'correct current question' do
+      game_w_questions.current_level = new_level
+      new_level_question = game_w_questions.game_questions[new_level]
+      expect(game_w_questions.current_game_question).to eq(new_level_question)
+    end
+  end
+
+  context '.previous_level' do
+    let(:new_level) { 8 }
+
+    it 'correct previous level' do
+      # устанавливаем текущий уровень на один выше
+      game_w_questions.current_level = new_level + 1
+      expect(game_w_questions.previous_level).to eq(new_level)
+    end
+  end
+
+  context '.answer_current_question!' do
+    let(:q) { game_w_questions.current_game_question }
+    # когда ответ правильный
+    it 'correct answer' do
+      expect(game_w_questions.answer_current_question!(q.correct_answer_key)).to be_truthy
+      expect(game_w_questions.status).to eq :in_progress
+      expect(game_w_questions).not_to be_finished
+    end
+
+    # неправильный,
+    it 'incorrect answer' do
+      expect(game_w_questions.answer_current_question!('a')).to be_falsey
+      expect(game_w_questions.status).to eq :fail
+      expect(game_w_questions).to be_finished
+    end
+
+    # последний (на миллион)
+    it 'last answer' do
+      game_w_questions.current_level = Question::QUESTION_LEVELS.max
+
+      expect(game_w_questions.answer_current_question!(q.correct_answer_key)).to be_truthy
+      expect(game_w_questions.status).to eq :won
+      expect(game_w_questions).to be_finished
+      expect(game_w_questions.prize).to eq(1000000)
+    end
+
+    # ответ дан после истечения времени.
+    it 'answer after expiration of time' do
+      game_w_questions.created_at = Time.now - Game::TIME_LIMIT - 1.seconds
+
+      expect(game_w_questions.answer_current_question!(q.correct_answer_key)).to be_falsey
+      expect(game_w_questions.status).to eq :timeout
+      expect(game_w_questions).to be_finished
+    end
+  end
 end
