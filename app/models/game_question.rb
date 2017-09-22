@@ -75,6 +75,16 @@ class GameQuestion < ActiveRecord::Base
     variants[correct_answer_key]
   end
 
+  # Добавляем в help_hash по ключю fifty_fifty - массив из двух вариантов: правильный и случайный
+  # и сохраняем объект
+  def add_fifty_fifty
+    self.help_hash[:fifty_fifty] = [
+        correct_answer_key,
+        (%w(a b c d) - [correct_answer_key]).sample
+    ]
+    save
+  end
+
   # Генерируем в help_hash случайное распределение по вариантам и сохраняем объект
   def add_audience_help
     # массив ключей
