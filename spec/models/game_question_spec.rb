@@ -92,12 +92,12 @@ RSpec.describe GameQuestion, type: :model do
     # проверяем работу звонка другу
     it 'correct friend_call' do
       # сначала убедимся, в подсказках пока нет нужного ключа
-      expect(game_question.help_hash).not_to include(:fifty_fifty)
+      expect(game_question.help_hash).not_to include(:friend_call)
       # вызовем подсказку
-      game_question.add_fifty_fifty
+      game_question.add_friend_call
 
       # проверим создание подсказки
-      expect(game_question.help_hash).to include(:fifty_fifty)
+      expect(game_question.help_hash).to include(:friend_call)
     end
   end
 end
