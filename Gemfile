@@ -27,3 +27,11 @@ group :production do
   gem 'rails_12factor'
   gem 'pg'
 end
+
+# Гемы для интегрального тестирования
+# capybara - эмулирует действия пользователя в rspec
+# launchy помогает смотреть страницы в браузере
+group :test do
+  gem 'capybara'
+  gem 'launchy'
+end
